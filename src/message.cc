@@ -1,3 +1,6 @@
+#include <iostream>
+#include <byteswap.h>
+
 #include "message.h"
 #include "definitions.h"
 #include "bbb_control/gpio.h"
@@ -30,9 +33,10 @@ int gateway_payload_parse(char* content)
     if (len <= MAX_LENGTH)
     {
         memcpy(buf, content, len);
-        if (payload->type_id < TYPE_COUNT)
+        std::cout << "Type ID: " << __bswap_16(payload->type_id) << std::endl;
+        if (__bswap_16(payload->type_id) < TYPE_COUNT)
         {
-            switch (payload->type_id)
+            switch (__bswap_16(payload->type_id))
             {
             case (GET_NEIGHBORS):
             {
@@ -54,7 +58,9 @@ int gateway_payload_parse(char* content)
             case (REQ_WATER_PUMP_ON):
             {
                 // water
+                std::cout << "Turn pump on" << std::endl;
                 ret_val = bbb_gpio_set_value(WATER_PIN, GPIO_SET_HIGH);
+                std::cout << "RETVAL: " << ret_val << std::endl;
                 if (ret_val == 0)
                 {
                     payload->opt = REQ_SUCCESS;

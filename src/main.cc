@@ -8,6 +8,8 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 
+#include <pthread.h>
+
 #include "message.h"
 
 void error(const char *msg)
@@ -66,6 +68,7 @@ int main(int argc, char const *argv[])
 			std::string e("ERROR client address not understood");
 			error(e.data());
 		}
+
 		int rc = recv(clientfd, buffer, sizeof(buffer), 0);
 		if (rc < 0)
 		{
@@ -74,7 +77,10 @@ int main(int argc, char const *argv[])
 		}
 		else if (rc != 0)
 		{
+			std::cout << "Buffer received. Parsing ..." << std::endl;
 			gateway_payload_parse(buffer);
+
+			std::cout << "Done parsing. Replying ..." << std::endl;
 			int rc = send(clientfd, gateway_payload_reply(), gateway_payload_get_len(), 0);
 			if (rc < 0)
 			{
@@ -85,8 +91,6 @@ int main(int argc, char const *argv[])
 		{
 			continue;
 		}
-
-		ok = false;
 	}
 	close(sockfd);
 	unlink("/tmp/controller");
